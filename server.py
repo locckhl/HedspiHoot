@@ -1,3 +1,5 @@
+import json
+from module.Quiz import data_to_quiz, quiz_package_handle
 from clients.Player import Player
 from module.Room import Room
 from module.State import *
@@ -6,6 +8,7 @@ import socket
 import time
 import sys
 import random
+import ast
 
 
 host = "192.168.31.124"
@@ -27,11 +30,32 @@ def broadcast(message):
 def handleHost(client, address):
     try:
         client.send("You are host".encode("ascii"))
-        pin = random.randint(10000,99999)
-        # pin = 1
+        client.recv(1024).decode('ascii') # nop
+
+        pin = random.randint(1,20)
         client.send(str(pin).encode("ascii"))
         room = Room(address, pin)
         rooms.append(room)
+
+        choice = str(client.recv(1024).decode('ascii'))
+
+        if(choice == '1'):
+            client.send("nop".encode("ascii")) # nop
+            name, noQuest, noAns, questions, answers, rights = client.recv(1024).decode('ascii').split(';')
+            print(name, noQuest, noAns, questions, answers, rights)
+            quiz_package_handle(name, int(noQuest), int(noAns), ast.literal_eval(questions), ast.literal_eval(answers), ast.literal_eval(rights))       
+            quizzes = data_to_quiz("data.json")
+            current_quiz = quizzes[-1]
+        else:
+            file = open("data.json")
+            data = json.load(file)
+            print(f"data:{data}")
+            client.send(str(data).encode("ascii"))
+            choice = int(client.recv(1024).decode('ascii')) - 1
+            quizzes = data_to_quiz("data.json")
+            current_quiz = quizzes[choice]
+        print(f"Current quiz:{current_quiz.name}") 
+
         client.close()
             # client.send(str(int(State.INPUT)).encode("ascii"))
     except:
