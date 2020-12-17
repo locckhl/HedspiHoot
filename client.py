@@ -3,6 +3,7 @@ import socket
 import threading
 import sys
 import json
+import time
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect(("192.168.31.124", 55555))
@@ -61,6 +62,21 @@ def hostClient():
         choice = input("Your choice:")
         # send choice
         client.send(choice.encode("ascii"))
+
+        # Waiting for players
+        current_players = client.recv(1024).decode('ascii') 
+        request_start_game = input(f"Current player is {current_players}, do you want to start game (y or n ): ")
+
+        while request_start_game != 'y':
+            client.send("n".encode("ascii"))
+            current_players = client.recv(1024).decode('ascii') 
+            # if current_players != temp:
+            #     current_players = temp
+            request_start_game = input(f"Current player is {current_players}, do you want to start game (y or n ): ")
+        
+        client.send("y".encode("ascii"))
+        response_start_game = client.recv(1024).decode('ascii') 
+        print("Game started")
 
 
 def playerClient():

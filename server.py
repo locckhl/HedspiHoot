@@ -56,6 +56,15 @@ def handleHost(client, address):
             current_quiz = quizzes[choice]
         print(f"Current quiz:{current_quiz.name}") 
 
+        client.send(str(len(room.players)).encode("ascii"))
+
+        request_start_game = client.recv(1024).decode('ascii')
+        while(request_start_game != 'y' ):
+            client.send(str(len(room.players)).encode("ascii"))
+            request_start_game = client.recv(1024).decode('ascii')
+        # print(f"player in room {room.pin}:{len(room.players)}")
+
+        client.send("Start game").encode("ascii")
         client.close()
             # client.send(str(int(State.INPUT)).encode("ascii"))
     except:
