@@ -1,9 +1,10 @@
 from enum import IntEnum
 
 class State(IntEnum):
-   INPUT = 1
-   LOBBY = 2
-   START_GAME = 3
-   CONTINUE_GAME = 4
+   LOBBY = 0
+   START_GAME = 1
+   SHOW_QUESTION = 2
+   SHOW_RESULT = 3
+   NEXT_QUEST = 4
    END_GAME = 5
 

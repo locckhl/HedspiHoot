@@ -13,7 +13,7 @@ class Quiz():
         self.id = self.id = next(Quiz.id_iter)
 
     def to_string(self):
-        return f"{str(self.id)};{str(self.id2)};{str(self.id3)}"  
+        return f"{str(self.name)};{str(self.noQuest)};{str(self.noAns)};{str(self.questions)};{str(self.answers)};{str(self.rights)}"  
 
 
 def append_data_json(new_data):
@@ -71,7 +71,7 @@ def data_to_quiz(filename):
             right = list['right']
             rights.append(right)
         
-        quizzesClass = Quiz(name, noQuest, noAns, questions, answers, rights)
+        quizzesClass = Quiz(name, int(noQuest), int(noAns), questions, answers, rights)
         quizzesClasses.append(quizzesClass)
         # for u in quizzesClasses:
         #     print(u.name)
@@ -89,7 +89,8 @@ def data_to_quiz(filename):
 # print(a)
 # append_data_json(a)
 
-# quiz1 = Quiz(1, 2, 3, 4, 5, 6 )
+# quiz1 = Quiz(2, 2, 2, ['2', '2'], [['2', '2'], ['2', '2']], [1, 1])
+# print(quiz1.to_string())
 # quiz2 = Quiz(1, 2, 3, 4, 5,6)
 # print(quiz1.id)
 # print(quiz2.id)
