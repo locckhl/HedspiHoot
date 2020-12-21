@@ -83,7 +83,7 @@ def data_to_quiz(filename):
 
     return quizzesClasses
     #2 2 2 ['2', '2'] [['2', '2'], ['2', '2']] [1, 1]
-# data_to_quiz()    
+# data_to_quiz("data.json")    
 # append_data_json({ "name": "Math", "noQuest": 2, "noAns": 2, "lists": [ { "quest": "1+1 = ?", "ans": [2, 3], "right": 0 }, { "quest": "1-1 = ?", "ans": [0, 45], "right": 0 } ] })
 # a = package_to_data(2, 2, 2, ['2', '2'], [['2', '2'], ['2', '2']], [1, 1])
 # print(a)

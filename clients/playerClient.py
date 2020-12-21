@@ -1,3 +1,6 @@
+from inputimeout import inputimeout, TimeoutOccurred
+from env import TIME
+
 def playerClient(client):
     # Receive confirm from server: you are ...
     message = client.recv(1024).decode("ascii")
@@ -41,7 +44,12 @@ def playerClient(client):
         print("Please choose Answers")
         for x in range(0,int(noAns)):
             print(f"{x+1}.")
-        answer = input("Your anwer >> ")
+        # answer = input("Your anwer >> ")
+        try:
+            answer = inputimeout(prompt=f'You have {TIME} seconds to answer:', timeout=TIME)
+        except TimeoutOccurred:
+            print("You missed this question")
+            answer = '0'
         client.send(answer.encode("ascii"))
         result = client.recv(1024).decode("ascii")
         print(result)

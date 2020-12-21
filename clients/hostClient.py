@@ -1,5 +1,7 @@
 from module.Quiz import Quiz, data_to_quiz
+from inputimeout import inputimeout, TimeoutOccurred
 import ast
+from env import TIME
 
 def hostClient(client):
     # Receive confirm from server: you are ...
@@ -48,7 +50,7 @@ def hostClient(client):
         f.write(data)
         f.close()
         quizzes = data_to_quiz("data-client.json")
-        print(f"quizzes:{quizzes}")
+        # print(f"quizzes:{quizzes}")
 
         print("Choose a quiz")
         for quiz in quizzes:
@@ -66,7 +68,7 @@ def hostClient(client):
 
     
     print(f"current_quiz:{current_quiz.to_string()}")
-    print(f"current_quiz2:{current_quiz.questions[0]}")
+    # print(f"current_quiz2:{current_quiz.questions[0]}")
 
     # Received pin
     pin = client.recv(1024).decode("ascii")
@@ -76,14 +78,23 @@ def hostClient(client):
 
     # Waiting for players
     current_players = client.recv(1024).decode("ascii") 
-    request_start_game = input(f"Current player is {current_players}, do you want to start game (y or n ): ")
+    request_start_game = 'n'
+
+    try:
+        request_start_game = inputimeout(prompt=f'Current player is {current_players}, do you want to start game (y or n ): ', timeout=2)
+    except TimeoutOccurred:
+        pass
 
     while request_start_game != "y":
         client.send("n".encode("ascii"))
         current_players = client.recv(1024).decode("ascii") 
         # if current_players != temp:
         #     current_players = temp
-        request_start_game = input(f"Current player is {current_players}, do you want to start game (y or n ): ")
+        # request_start_game = input(f"Current player is {current_players}, do you want to start game (y or n ): ")
+        try:
+            request_start_game = inputimeout(prompt=f'Current player is {current_players}, do you want to start game (y or n ): ', timeout=3)
+        except TimeoutOccurred:
+            pass
     
     client.send("y".encode("ascii"))
     print("Game started")
@@ -104,7 +115,7 @@ def hostClient(client):
         mess = client.recv(1024).decode("ascii") 
         print(mess)
         if(x != (current_quiz.noQuest-1)):
-            request_next_quest = input("Next question (type yes)?")
+            request_next_quest = input("Next question (type y)?")
             client.send(request_next_quest.encode("ascii"))
         else:
             client.send("End of quiz".encode("ascii"))

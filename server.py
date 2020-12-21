@@ -9,7 +9,7 @@ import time
 import sys
 import random
 import ast
-from env import SERVER_IP, SERVER_IP, TIME
+from env import SERVER_IP, TIME
 
 host = SERVER_IP
 port = 55555
@@ -118,8 +118,8 @@ def handleHost(client, address):
 
         client.close()
     except:
-        pins.remove(pin)
-        rooms.remove(current_room)
+        # pins.remove(pin)
+        # rooms.remove(current_room)
         clients.remove(client)
         client.close()
 
@@ -204,7 +204,7 @@ def handlePlayer(client, address):
         clients.remove(client)
 
     except:
-        nicknames.remove(nickname)
+        # nicknames.remove(nickname)
         clients.remove(client)
         client.close()
 
