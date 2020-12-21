@@ -18,11 +18,11 @@ def main():
     # try:
     role = input("Welcome to HedHoot, please choose your role\n 1. Host\n 2. Player: ")
     client.send(role.encode("ascii"))
-    message = client.recv(1024).decode("ascii")
-    print(message)
-    message = client.recv(1024).decode("ascii")
-    print(message)
-    print(role)
+    
+    # client.send("nop".encode("ascii"))
+    # message = client.recv(1024).decode("ascii")
+    # print(message)
+    # print(role)
 
     if(role == "1"): #Host
         hostClient(client)

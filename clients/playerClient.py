@@ -1,4 +1,8 @@
 def playerClient(client):
+    # Receive confirm from server: you are ...
+    message = client.recv(1024).decode("ascii")
+    print(message)
+
     nickname = input("Please input your nickname: ")
     client.send(nickname.encode("ascii"))
     status = client.recv(1024).decode("ascii") # was nickname created sucessfully
@@ -28,7 +32,10 @@ def playerClient(client):
     # --------------------------------Game started---------------------------------
 
     noAns = client.recv(1024).decode("ascii")
+    client.send("nop".encode("ascii"))
+    print(f"noAns:{noAns}")
     mess = client.recv(1024).decode("ascii")
+    print(f"mess from server:{mess}")
     while(mess != 'End'):
 
         print("Please choose Answers")
@@ -38,6 +45,7 @@ def playerClient(client):
         client.send(answer.encode("ascii"))
         result = client.recv(1024).decode("ascii")
         print(result)
+        client.send("nop".encode("ascii"))
         mess = client.recv(1024).decode("ascii")
     print("End game")
     client.close()

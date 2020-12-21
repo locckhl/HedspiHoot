@@ -2,9 +2,12 @@ from module.Quiz import Quiz, data_to_quiz
 import ast
 
 def hostClient(client):
-    client.send("nop".encode("ascii"))
-    pin = client.recv(1024).decode("ascii")
-    print(f"received pin:{pin}")
+    # Receive confirm from server: you are ...
+    message = client.recv(1024).decode("ascii")
+    print(message)
+
+    # client.send("nop".encode("ascii"))
+    
     # print(pin)
 
     choice = input("Do you wan to create new quiz (1) or choose from our quizzes (2) : ")
@@ -64,6 +67,12 @@ def hostClient(client):
     
     print(f"current_quiz:{current_quiz.to_string()}")
     print(f"current_quiz2:{current_quiz.questions[0]}")
+
+    # Received pin
+    pin = client.recv(1024).decode("ascii")
+    print(f"received pin:{pin}")
+    client.send("nop".encode("ascii"))
+    
 
     # Waiting for players
     current_players = client.recv(1024).decode("ascii") 

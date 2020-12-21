@@ -9,11 +9,11 @@ import time
 import sys
 import random
 import ast
-from env import SERVER_IP, SERVER_IP
+from env import SERVER_IP, SERVER_IP, TIME
 
 host = SERVER_IP
 port = 55555
-TIME = 5
+
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -23,21 +23,18 @@ server.listen()
 clients = []
 nicknames = []
 rooms = []
- 
+pins = []
 def broadcast(message):
     for client in clients:
         client.send(message)
 
 def handleHost(client, address):
     try:
+        # client.recv(1024).decode("ascii") # nop
         client.send("You are host".encode("ascii"))
-        client.recv(1024).decode("ascii") # nop
+        # client.recv(1024).decode("ascii") # nop
 
-        pin = random.randint(1,20)
-        client.send(str(pin).encode("ascii"))
-        room = Room(address, pin)
-        rooms.append(room)
-        current_room = rooms[-1]
+        
 
         choice = str(client.recv(1024).decode("ascii"))
 
@@ -61,8 +58,21 @@ def handleHost(client, address):
             client.recv(1024).decode("ascii") 
 
 
+        pin = random.randint(1,20)
+        while (pin in pins):
+            pin = random.randint(1,20)
+        pins.append(pin)
+        client.send(str(pin).encode("ascii"))
+        room = Room(address, pin)
+        rooms.append(room)
+        current_room = rooms[-1]
+
+        client.recv(1024).decode("ascii")
+
         print(f"Current quiz:{current_quiz.name}") 
         room.quiz = current_quiz
+
+        
 
         #Lobby
         client.send(str(len(room.players)).encode("ascii"))
@@ -91,24 +101,32 @@ def handleHost(client, address):
             client.send("Show question".encode("ascii"))
             # client.send(current_room.pin).encode("ascii") # Show question
             current_room.state = State.SHOW_QUESTION 
-            time.sleep(TIME+1)
+            time.sleep(TIME+0.1)
             client.send("Result".encode("ascii"))
             current_room.state = State.SHOW_RESULT
             client.recv(1024).decode("ascii") # Continue game
             current_room.state = State.NEXT_QUEST
 
+        current_room.state = State.END_GAME
         client.send("END".encode("ascii")) # Show question
 
         print("End game")
 
+        pins.remove(pin)
+        rooms.remove(current_room)
+        clients.remove(client)
+
         client.close()
     except:
+        pins.remove(pin)
+        rooms.remove(current_room)
         clients.remove(client)
         client.close()
 
 
 def handlePlayer(client, address):
     try:
+        # client.recv(1024).decode("ascii")
         client.send("You are client".encode("ascii"))
 
         nickname = client.recv(1024).decode("ascii")
@@ -161,8 +179,11 @@ def handlePlayer(client, address):
         noAns = current_room.quiz.noAns
         print(current_room.quiz.noAns)
         # print(type(current_room.quiz.noAns))
-        client.send(str(noAns).encode("ascii")) # 
+        client.send(str(noAns).encode("ascii")) 
+        client.recv(1024).decode("ascii")
         for x in range(0,current_room.quiz.noQuest):
+            if(current_room.state == State.END_GAME):
+                break
             while(current_room.state != State.NEXT_QUEST and current_room.state != State.SHOW_QUESTION):
                 # print(current_room.state)
                 pass 
@@ -172,42 +193,45 @@ def handlePlayer(client, address):
             while(current_room.state != State.SHOW_RESULT):
                 pass 
             client.send("Result".encode("ascii")) # Show result
+            client.recv(1024).decode("ascii")
+            print("Recevied")
 
         client.send("End".encode("ascii"))
 
         print("ServerPlayer end game")
         
-
+        nicknames.remove(nickname)
+        clients.remove(client)
 
     except:
+        nicknames.remove(nickname)
         clients.remove(client)
         client.close()
 
 def main():
-    # try:
-    while True:
-        client, address = server.accept()
-        print(f"Connected with {str(address)}")
+    try:
+        while True:
+            client, address = server.accept()
+            print(f"Connected with {str(address)}")
 
-        role = client.recv(1024).decode("ascii")
-        clients.append(client)
+            role = client.recv(1024).decode("ascii")
+            clients.append(client)
 
-        if(role == "1"): #Host
-            client.send("Connected to the server".encode("ascii"))
+            if(role == "1"): #Host
 
-            thread = threading.Thread(target=handleHost, args=(client, address, ), daemon=True)
-            thread.start()
-        else: #Player
-            client.send("Connected to the server".encode("ascii"))
+                thread = threading.Thread(target=handleHost, args=(client, address, ), daemon=True)
+                thread.start()
+            else: #Player
 
-            thread = threading.Thread(target=handlePlayer, args=(client, address, ), daemon=True)
-            thread.start()
+                thread = threading.Thread(target=handlePlayer, args=(client, address, ), daemon=True)
+                thread.start()
 
             # while thread.is_alive():
             #     thread.join(1)
-    # except KeyboardInterrupt:
-    #     print("Ctrl+C pressed...")
-    #     sys.exit(1)
+    except KeyboardInterrupt:
+        print("Ctrl+C pressed...")
+        server.close()
+        sys.exit(1)
         
 
 print("Server is listening...")
