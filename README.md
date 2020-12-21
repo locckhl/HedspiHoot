@@ -16,7 +16,9 @@ Follow the following steps to clone this project: ❤❤
     * Using Github CLI: `gh repo clone locckhl/HedspiHoot`
 
 
-* Edit host in server.py and client.py by your ip address
+* Create env.py file then change SERVER_IP and CLIENT_IP by your ip adress: 
+* Copy content from **data.base.json** file to  **data.json** file : 
+* Install necessary packages: `pip install -r requirements.txt` or `pip3 install -r requirements.txt`
 * Run the server: `python server.py`
 * Run the client: `python client.py`
 
