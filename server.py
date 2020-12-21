@@ -9,9 +9,9 @@ import time
 import sys
 import random
 import ast
+from env import SERVER_IP, SERVER_IP
 
-
-host = "192.168.31.124"
+host = SERVER_IP
 port = 55555
 TIME = 5
 
@@ -150,17 +150,21 @@ def handlePlayer(client, address):
 
         print("Waiting for host to start game!!!!")
         while(current_room.state != State.START_GAME):
-            print(current_room.state)
+            # print(current_room.state)
             pass
         print("Game started")
         client.send("Game started".encode("ascii"))
 
+        confirm = client.recv(1024).decode("ascii") # Receive confirm
+        print(confirm)
         # --------------------------------Game started---------------------------------
-        print(f"noAns:{current_room.quiz.noAns}")
-        client.send(str(current_room.quiz.noAns).encode("ascii")) # Show question
+        noAns = current_room.quiz.noAns
+        print(current_room.quiz.noAns)
+        # print(type(current_room.quiz.noAns))
+        client.send(str(noAns).encode("ascii")) # 
         for x in range(0,current_room.quiz.noQuest):
             while(current_room.state != State.NEXT_QUEST and current_room.state != State.SHOW_QUESTION):
-                print(current_room.state)
+                # print(current_room.state)
                 pass 
             client.send("Choose anwser".encode("ascii")) # Display next question
 

@@ -1,0 +1,43 @@
+def playerClient(client):
+    nickname = input("Please input your nickname: ")
+    client.send(nickname.encode("ascii"))
+    status = client.recv(1024).decode("ascii") # was nickname created sucessfully
+
+    while status == "false":
+        nickname = input("Your nick name was taken, please input another one: ")
+        client.send(nickname.encode("ascii"))
+        status = client.recv(1024).decode("ascii") # was nickname created sucessfully
+    print(f"Your nick name {nickname} was created sucessfully")
+
+    pin = input("Input a room's pin: ")
+    client.send(pin.encode("ascii"))
+    status = client.recv(1024).decode("ascii") # was an available room ?
+
+    while status == "false":
+        pin = input("Room not found, please input another one: ")
+        client.send(pin.encode("ascii"))
+        status = client.recv(1024).decode("ascii") # was an available room ?
+    print(f"Your enter room: {pin} ")
+
+    print("Waiting for host to start game!!!!")
+    client.recv(1024).decode("ascii")
+    print("Game started")
+
+    client.send("CONFIRM".encode("ascii"))
+
+    # --------------------------------Game started---------------------------------
+
+    noAns = client.recv(1024).decode("ascii")
+    mess = client.recv(1024).decode("ascii")
+    while(mess != 'End'):
+
+        print("Please choose Answers")
+        for x in range(0,int(noAns)):
+            print(f"{x+1}.")
+        answer = input("Your anwer >> ")
+        client.send(answer.encode("ascii"))
+        result = client.recv(1024).decode("ascii")
+        print(result)
+        mess = client.recv(1024).decode("ascii")
+    print("End game")
+    client.close()
