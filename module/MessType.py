@@ -1,10 +1,28 @@
 # from enum import IntEnum
 from enum import Enum
 class MessType(Enum):
-   SEND_ROLE = 0
-   CONFIRM_ROLE = 1
-   NEW_QUIZ = 2
-   SEND_NEW_QUIZ = 3
-   SEND_QUIZZES = 4
-   SEND_QUIZ_CHOICE = 5
-
+   SEND_ROLE = 1 ##
+   CONFIRM_ROLE = 2
+   NEW_QUIZ = 3 ##
+   SEND_NEW_QUIZ = 4 ##
+   SEND_QUIZZES = 5 
+   SEND_QUIZ_CHOICE = 6 ##
+   SEND_PIN = 7 
+   SEND_NO_PLAYER = 7 
+   REQUEST_START_GAME = 9 ##
+   SHOW_QUESTION = 10
+   HOST_RESULT = 11
+   REQUEST_NEXT_QUESTION = 12 ##
+   SET_NICKNAME = 13 ##
+   VALID_NICKNAME = 14
+   ROOM_PIN = 15 ##
+   VALID_ROOM_PIN = 16
+   START_GAME = 17
+   ANSWER_QUESTION = 18
+   SEND_ANSWER = 19 ##
+   PLAYER_RESULT = 20
+   SIGN_UP = 21
+   SIGN_IN = 22
+   NEXT_QUESTION = 23
+   END_GAME = 24
+   HOST_SIGN = 25

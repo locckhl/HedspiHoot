@@ -3,29 +3,35 @@ from module.MessType import MessType
 
 
 class Messages():
-    def __init__(self, type: str, username: str = "none", hash: str = "none",state: bool = True, body: str = "none"):
+    def __init__(self, type: str, username: str = "none", session: str = "none",state: bool = True, body: str = "none"):
         self.type = type
         self.username = username
-        self.hash = hash
+        self.session = session
         self.state = state
-        self.header = f"{type};{username};{hash};{state}"
+        self.header = f"{type};{username};{session};{state}"
         self.body = body
 
-    def to_message(self):
-        return f"{str(self.header)}\n{str(self.body)}" 
+    def to_message(self) -> bytes:
+        return f"{str(self.header)}\n{str(self.body)}".encode("ascii") 
 
 def convert_message(message: str) -> Messages:
+    print(f"Message received : {message}")
+    
+    message = message.decode("ascii")
+    # if(message == EOF):
+    #     return
+    # print(f"Message received from: {message}")
     header, body = message.split("\n")
     # print(header)
     # print(body)
-    type, username, hash, state = header.split(";")
+    type, username, session, state = header.split(";")
     # print("---")
     # print(type)
     # print(username)
-    # print(hash)
+    # print(session)
     # print(state)
 
-    return Messages(type, username, hash, state, body)
+    return Messages(type, username, session, state, body)
 # a = Messages(MessType.CONFIRM_ROLE)
 # mess = a.to_message()
 # print(mess)
