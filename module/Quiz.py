@@ -82,6 +82,20 @@ def data_to_quiz(filename):
         #     print(u.rights[0])
 
     return quizzesClasses
+
+def find_quiz_by_user(username:str):
+    file = open("data.json")
+    quizzes = json.load(file)
+    # print(quizzes)
+
+    data = []   
+    for quiz in quizzes:
+        user = quiz['user']
+        if user == username:
+            data.append(quiz)
+    return data
+# result = find_quiz_by_user("root")
+# print(result)
     #2 2 2 ['2', '2'] [['2', '2'], ['2', '2']] [1, 1]
 # data_to_quiz("data.json")    
 # append_data_json({ "name": "Math", "noQuest": 2, "noAns": 2, "lists": [ { "quest": "1+1 = ?", "ans": [2, 3], "right": 0 }, { "quest": "1-1 = ?", "ans": [0, 45], "right": 0 } ] })

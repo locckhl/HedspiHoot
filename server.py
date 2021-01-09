@@ -1,5 +1,8 @@
+from clients.Host import Host, append_user, check_host_exsist, check_usr_valid
 import json
-from module.Quiz import data_to_quiz, quiz_package_handle
+from module.MessType import MessType
+from module.Messages import Messages, convert_message
+from module.Quiz import data_to_quiz, find_quiz_by_user, quiz_package_handle
 from clients.Player import Player
 from module.Room import Room
 from module.State import *
@@ -16,11 +19,13 @@ port = 55555
 
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
+# server.setblocking(False)
 server.bind((host,port))
 server.listen()
 
 clients = []
+players = []
+hosts = []
 nicknames = []
 rooms = []
 pins = []
@@ -28,203 +33,236 @@ def broadcast(message):
     for client in clients:
         client.send(message)
 
-def handleHost(client, address):
-    try:
-        # client.recv(1024).decode("ascii") # nop
-        client.send("You are host".encode("ascii"))
-        # client.recv(1024).decode("ascii") # nop
 
-        
+def findHost(host_user_name) -> Host:
+    print(host_user_name)
+    # print(hosts)
+    for host in hosts:
+        print(host.username)
+        if(host.username == host_user_name ):
+            return host
+    return None
+def findRoom(room_pin) -> Room:
+    for room in rooms:
+        print(room.pin)
+        if(room.pin == room_pin ):
+            return room
+    return None
+def broadCast(room:Room, message:Messages):
+    print(room.players)
+    print(players)
+    for player_in_room in room.players:
+        for player_dict in players:
+            if(player_dict["nickname"] == player_in_room.nickname):
+                player_dict["client"].send(message.to_message())
 
-        choice = str(client.recv(1024).decode("ascii"))
+    return
 
-        if(choice == '1'):
-            client.send("nop".encode("ascii")) # nop
-            name, noQuest, noAns, questions, answers, rights = client.recv(1024).decode("ascii").split(';')
+def handleClient(client, address):
+    while True:
+        rmessage = convert_message(client.recv(1024))
+        rmessage_type = rmessage.type
+        print(rmessage_type)
+        # print(MessType.SEND_ROLE.name)
+        # print(rmessage.username)
+
+        if(rmessage_type == MessType.SEND_ROLE.name): #1 Client choose role
+            if(rmessage.body == "1"):
+                print("#1 - 1")
+                smessage = Messages(MessType.CONFIRM_ROLE.name, body="You are host")
+            elif(rmessage.body == "2"):
+                smessage = Messages(MessType.CONFIRM_ROLE.name, body="You are client")
+            else:
+                smessage = Messages(MessType.CONFIRM_ROLE.name, state=False , body="Wrong mess")
+            client.send(smessage.to_message())
+        elif(rmessage_type == MessType.NEW_QUIZ.name): #3 Host quiz 's choice ( new or old ) 
+            if(rmessage.body == "1"):
+                client.send(Messages(MessType.CONFIRM_ROLE.name, body="Input new quiz").to_message())
+                
+            else:
+                # file = open("data.json")
+                # data = json.load(file)
+                username = rmessage.username
+                data = find_quiz_by_user(username)
+                print(f"data:{data}")
+                client.send(Messages(MessType.SEND_QUIZZES.name, body=data).to_message())
+
+            
+        elif(rmessage_type == MessType.SEND_NEW_QUIZ.name): #4
+            name, noQuest, noAns, questions, answers, rights = rmessage.body.split(';')
+            username = rmessage.username
             print(name, noQuest, noAns, questions, answers, rights)
             quiz_package_handle(name, int(noQuest), int(noAns), ast.literal_eval(questions), ast.literal_eval(answers), ast.literal_eval(rights))       
             quizzes = data_to_quiz("data.json")
             current_quiz = quizzes[-1]
-        else:
-            file = open("data.json")
-            data = json.load(file)
-            print(f"data:{data}")
-            client.send(str(data).encode("ascii"))
-            choice = int(client.recv(1024).decode("ascii")) - 1
-            quizzes = data_to_quiz("data.json")
-           
-            current_quiz = quizzes[choice]
-            client.send(current_quiz.to_string().encode("ascii"))
-            client.recv(1024).decode("ascii") 
+            host = findHost(username)
+            if(host != None):
+                host.current_quiz = current_quiz
 
-
-        pin = random.randint(1,20)
-        while (pin in pins):
             pin = random.randint(1,20)
-        pins.append(pin)
-        client.send(str(pin).encode("ascii"))
-        room = Room(address, pin)
-        rooms.append(room)
-        current_room = rooms[-1]
+            while (pin in pins):
+                pin = random.randint(1,20)
+            pins.append(pin)
+            client.send(Messages(MessType.SEND_PIN.name, body=pin).to_message())
+            room = Room(address, pin)
+            rooms.append(room)
+            current_room = rooms[-1]
 
-        client.recv(1024).decode("ascii")
-
-        print(f"Current quiz:{current_quiz.name}") 
-        room.quiz = current_quiz
-
+            host = findHost(username)
+            if(host != None):
+                host.current_room = current_room
+            
+        elif(rmessage_type == MessType.SEND_QUIZ_CHOICE.name): #6
+            username = rmessage.username
+            choice = int(rmessage.body) - 1
+            quizzes = data_to_quiz(find_quiz_by_user(username))
         
+            current_quiz = quizzes[choice]
+            host = findHost(username)
+            if(host != None):
+                host.current_quiz = current_quiz
+            
+            client.send(Messages(MessType.CONFIRM_ROLE.name, body=current_quiz.to_string()).to_message())
+            
+            
+            pin = random.randint(1,20)
+            while (pin in pins):
+                pin = random.randint(1,20)
+            pins.append(pin)
+            client.send(Messages(MessType.SEND_PIN.name, body=pin).to_message())
+            room = Room(address, pin)
+            rooms.append(room)
+            current_room = rooms[-1]
+            
+            host = findHost(username)
+            print("host find", host)
 
-        #Lobby
-        client.send(str(len(room.players)).encode("ascii"))
-
-        print(f"current_room.state{current_room.state}")
-        print(current_room.pin)
-
-
-        request_start_game = client.recv(1024).decode("ascii")
-        while(request_start_game != "y" ):
-            client.send(str(len(room.players)).encode("ascii"))
-            request_start_game = client.recv(1024).decode("ascii")
-        print(request_start_game)
-        
-        # print(f"player in room {room.pin}:{len(room.players)}")
-        
-        current_room.state = State.START_GAME
-        print(f"current_room.state  {current_room.state}")
-        print(current_room.pin)
-        # Game started
-
-        # --------------------------------Game started---------------------------------
-
-        for x in range(0,current_room.quiz.noQuest):
-            print(x)
-            client.send("Show question".encode("ascii"))
-            # client.send(current_room.pin).encode("ascii") # Show question
-            current_room.state = State.SHOW_QUESTION 
+            if(host != None):
+                host.current_room = current_room
+                print(f"{host.username}")
+                print(f"{host.current_room}")
+                print(f"{current_room}")
+        elif(rmessage_type == MessType.REQUEST_START_GAME.name): #9
+            username = rmessage.username
+            host = findHost(username)
+            print(f"{host.username}")
+            print(f"{host.current_room}")
+            request_start_game = "n"
+            while(request_start_game != "y" ):
+                client.send(Messages(MessType.SEND_NO_PLAYER.name, body=str(len(host.current_room.players))).to_message())
+                request_start_game = convert_message(client.recv(1024)).body
+            print(request_start_game)
+            client.send(Messages(MessType.START_GAME.name, body="start game").to_message())
+            broadCast(host.current_room, Messages(MessType.START_GAME.name, body="2;start game"))
+            print("Game started")
             time.sleep(TIME+0.1)
-            client.send("Result".encode("ascii"))
-            current_room.state = State.SHOW_RESULT
-            client.recv(1024).decode("ascii") # Continue game
-            current_room.state = State.NEXT_QUEST
+            result = host.current_room.get_players_ranking()
+            client.send(Messages(MessType.HOST_RESULT.name, body=result).to_message())
 
-        current_room.state = State.END_GAME
-        client.send("END".encode("ascii")) # Show question
+        elif(rmessage_type == MessType.REQUEST_NEXT_QUESTION.name): #12
+            username = rmessage.username
+            # username = rmessage.username
+            host = findHost(username)
+            client.send(Messages(MessType.NEXT_QUESTION.name, body="Next question").to_message())
+            # convert_message(client.recv(1024))
+            broadCast(host.current_room, Messages(MessType.NEXT_QUESTION.name, body="Next question"))
+            time.sleep(TIME+0.1)
+            result = host.current_room.get_players_ranking()
+            client.send(Messages(MessType.HOST_RESULT.name, body=result).to_message())
 
-        print("End game")
+        elif(rmessage_type == MessType.SET_NICKNAME.name): #13
+            
+            nickname = rmessage.body
+            while(nickname in nicknames):
+                client.send(Messages(MessType.VALID_NICKNAME.name, body="false").to_message())
+                nickname = convert_message(client.recv(1024))
 
-        pins.remove(pin)
-        rooms.remove(current_room)
-        clients.remove(client)
+            nicknames.append(nickname)
+            print(f"current players: {nicknames}")
+            client.send(Messages(MessType.VALID_NICKNAME.name, body="true").to_message())
 
-        client.close()
-    except:
-        # pins.remove(pin)
-        # rooms.remove(current_room)
-        clients.remove(client)
-        client.close()
-
-
-def handlePlayer(client, address):
-    try:
-        # client.recv(1024).decode("ascii")
-        client.send("You are client".encode("ascii"))
-
-        nickname = client.recv(1024).decode("ascii")
-        while(nickname in nicknames):
-            client.send("false".encode("ascii"))
-            nickname = client.recv(1024).decode("ascii")
-        client.send("true".encode("ascii"))
-
-        nicknames.append(nickname)
-        print(f"current players: {nicknames}")
-
-        # Enter room pin
-        room_pin = client.recv(1024).decode("ascii")
-        status = "false"
-        current_room = None
-        for room in rooms:
-            if(int(room_pin) == room.pin):
-                current_room = room
-                status = "true"
-                break
-
-        while status != "true":
-            client.send("false".encode("ascii"))
-            room_pin = client.recv(1024).decode("ascii")
+        elif(rmessage_type == MessType.ROOM_PIN.name): #15
+            
+            room_pin = rmessage.body
+            nickname = rmessage.username
+            status = "false"
+            current_room = None
             for room in rooms:
                 if(int(room_pin) == room.pin):
                     current_room = room
                     status = "true"
                     break
+            if status == "true":
+                player = Player(nickname, current_room)
+                players.append({"nickname": nickname, "client": client})
+                current_room.players.append(player)
+                print(f"Current room: {current_room}")
+                client.send(Messages(MessType.VALID_ROOM_PIN.name, body="true").to_message())
 
-        player = Player(nickname, address, current_room)
-        current_room.players.append(player)
-        print(f"Current room: {current_room}")
-        client.send("true".encode("ascii"))
+                print(f"Current player in room {current_room.pin}")
+                for player in current_room.players:
+                    print(f"{player.nickname}")
+            else:
+                client.send(Messages(MessType.VALID_ROOM_PIN.name, body="false").to_message())
+                
+        elif(rmessage_type == MessType.SEND_ANSWER.name): #19
+            nickname = rmessage.username
+            pin, answer = rmessage.body.split(';')
+            room = findRoom(pin)
+            if room != None:
+                player = room.find_player_in_room(nickname)
+                player.answers.append(int(answer))
+                client.send(Messages(MessType.PLAYER_RESULT.name, body=player.get_result()).to_message()) 
+            else:
+                client.send(Messages(MessType.CONFIRM_ROLE.name, state=False, body="Room not found or answer invalid").to_message())
 
-        print(f"Current player in room {current_room.pin}")
-        for player in current_room.players:
-            print(f"{player.nickname}")
+        elif(rmessage_type == MessType.SIGN_UP.name): #21
+            username, password, confirm_password = rmessage.body.split(';')
+            if(check_usr_valid(username) and password == confirm_password):
+                host = Host(username,password)
+                hosts.append(host)
+                append_user(username, password)
+                client.send(Messages(MessType.CONFIRM_ROLE.name, state=True, body="sign up successed").to_message())
+            else:
+                client.send(Messages(MessType.CONFIRM_ROLE.name, state=False, body="sign up falied").to_message())
 
-        print("Waiting for host to start game!!!!")
-        while(current_room.state != State.START_GAME):
-            # print(current_room.state)
+        elif(rmessage_type == MessType.SIGN_IN.name): #21
+            username, password = rmessage.body.split(';')
+            if(check_host_exsist(username, password)):
+                host = Host(username,password)
+                hosts.append(host)
+                client.send(Messages(MessType.CONFIRM_ROLE.name, state=True, body="sign in successed").to_message())
+            else:
+                client.send(Messages(MessType.CONFIRM_ROLE.name, state=False, body="sign in falied").to_message())
+
+        elif(rmessage_type == MessType.END_GAME.name): #23
+            username = rmessage.username
+            host = findHost(username)
+            broadCast(host.current_room, Messages(MessType.END_GAME.name, body="End"))
+        else:
             pass
-        print("Game started")
-        client.send("Game started".encode("ascii"))
-
-        confirm = client.recv(1024).decode("ascii") # Receive confirm
-        print(confirm)
-        # --------------------------------Game started---------------------------------
-        noAns = current_room.quiz.noAns
-        print(current_room.quiz.noAns)
-        # print(type(current_room.quiz.noAns))
-        client.send(str(noAns).encode("ascii")) 
-        client.recv(1024).decode("ascii")
-        for x in range(0,current_room.quiz.noQuest):
-            if(current_room.state == State.END_GAME):
-                break
-            while(current_room.state != State.NEXT_QUEST and current_room.state != State.SHOW_QUESTION):
-                # print(current_room.state)
-                pass 
-            client.send("Choose anwser".encode("ascii")) # Display next question
-
-            answer = client.recv(1024).decode("ascii") # Receive answer
-            while(current_room.state != State.SHOW_RESULT):
-                pass 
-            client.send("Result".encode("ascii")) # Show result
-            client.recv(1024).decode("ascii")
-            print("Recevied")
-
-        client.send("End".encode("ascii"))
-
-        print("ServerPlayer end game")
-        
-        nicknames.remove(nickname)
-        clients.remove(client)
-
-    except:
-        # nicknames.remove(nickname)
-        clients.remove(client)
-        client.close()
-
+  
 def main():
     try:
         while True:
             client, address = server.accept()
             print(f"Connected with {str(address)}")
 
-            role = client.recv(1024).decode("ascii")
-            clients.append(client)
+            thread = threading.Thread(target=handleClient, args=(client, address, ), daemon=True)
+            thread.start()
+          
+            # print(indirect(int(message.username)))
 
-            if(role == "1"): #Host
+            
 
-                thread = threading.Thread(target=handleHost, args=(client, address, ), daemon=True)
-                thread.start()
-            else: #Player
+            # if(role == "1"): #Host
 
-                thread = threading.Thread(target=handlePlayer, args=(client, address, ), daemon=True)
-                thread.start()
+            #     thread = threading.Thread(target=handleHost, args=(client, address, ), daemon=True)
+            #     thread.start()
+            # else: #Player
+
+            #     thread = threading.Thread(target=handlePlayer, args=(client, address, ), daemon=True)
+            #     thread.start()
 
             # while thread.is_alive():
             #     thread.join(1)
