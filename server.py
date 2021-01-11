@@ -42,7 +42,8 @@ def findHost(host_user_name) -> Host:
         if(host.username == host_user_name ):
             return host
     return None
-def findRoom(room_pin) -> Room:
+def findRoom(room_pin:int) -> Room:
+    print(int)
     for room in rooms:
         print(room.pin)
         if(room.pin == room_pin ):
@@ -92,7 +93,7 @@ def handleClient(client, address):
             name, noQuest, noAns, questions, answers, rights = rmessage.body.split(';')
             username = rmessage.username
             print(name, noQuest, noAns, questions, answers, rights)
-            quiz_package_handle(name, int(noQuest), int(noAns), ast.literal_eval(questions), ast.literal_eval(answers), ast.literal_eval(rights))       
+            quiz_package_handle(name, int(noQuest), int(noAns), ast.literal_eval(questions), ast.literal_eval(answers), ast.literal_eval(rights), username)       
             quizzes = data_to_quiz("data.json")
             current_quiz = quizzes[-1]
             host = findHost(username)
@@ -111,16 +112,19 @@ def handleClient(client, address):
             host = findHost(username)
             if(host != None):
                 host.current_room = current_room
+                host.current_room.quiz = current_quiz
             
         elif(rmessage_type == MessType.SEND_QUIZ_CHOICE.name): #6
             username = rmessage.username
             choice = int(rmessage.body) - 1
-            quizzes = data_to_quiz(find_quiz_by_user(username))
+            find_quiz_by_user(username)
+            quizzes = data_to_quiz("data.json", username)
         
             current_quiz = quizzes[choice]
             host = findHost(username)
             if(host != None):
                 host.current_quiz = current_quiz
+                
             
             client.send(Messages(MessType.CONFIRM_ROLE.name, body=current_quiz.to_string()).to_message())
             
@@ -139,6 +143,7 @@ def handleClient(client, address):
 
             if(host != None):
                 host.current_room = current_room
+                host.current_room.quiz = current_quiz
                 print(f"{host.username}")
                 print(f"{host.current_room}")
                 print(f"{current_room}")
@@ -156,6 +161,7 @@ def handleClient(client, address):
             broadCast(host.current_room, Messages(MessType.START_GAME.name, body="2;start game"))
             print("Game started")
             time.sleep(TIME+0.1)
+            # host.current_room.caculate_score_of_player()
             result = host.current_room.get_players_ranking()
             client.send(Messages(MessType.HOST_RESULT.name, body=result).to_message())
 
@@ -208,10 +214,12 @@ def handleClient(client, address):
         elif(rmessage_type == MessType.SEND_ANSWER.name): #19
             nickname = rmessage.username
             pin, answer = rmessage.body.split(';')
-            room = findRoom(pin)
+            room = findRoom(int(pin))
             if room != None:
                 player = room.find_player_in_room(nickname)
                 player.answers.append(int(answer))
+                print(player.answers)
+                # client.send(Messages(MessType.CONFIRM_ROLE.name, state=False, body="Answer sucess").to_message())
                 client.send(Messages(MessType.PLAYER_RESULT.name, body=player.get_result()).to_message()) 
             else:
                 client.send(Messages(MessType.CONFIRM_ROLE.name, state=False, body="Room not found or answer invalid").to_message())

@@ -3,8 +3,9 @@ from itertools import count
 class Quiz():
     id_iter = count()
 
-    def __init__(self, name, noQuest, noAns, questions, answers, rights ):
+    def __init__(self, name, noQuest, noAns, questions, answers, rights, user ):
         self.name = name
+        self.user = user
         self.noQuest = noQuest
         self.noAns = noAns
         self.questions = questions
@@ -13,7 +14,7 @@ class Quiz():
         self.id = self.id = next(Quiz.id_iter)
 
     def to_string(self):
-        return f"{str(self.name)};{str(self.noQuest)};{str(self.noAns)};{str(self.questions)};{str(self.answers)};{str(self.rights)}"  
+        return f"{str(self.name)};{str(self.noQuest)};{str(self.noAns)};{str(self.questions)};{str(self.answers)};{str(self.rights)};{str(self.user)}"  
 
 
 def append_data_json(new_data):
@@ -28,10 +29,11 @@ def append_data_json(new_data):
     
     # the result is a JSON string: 
 
-def package_to_data(name, noQuest, noAns, questions, answers, rights):
-    print(name, noQuest, noAns, questions, answers, rights )
+def package_to_data(name, noQuest, noAns, questions, answers, rights, user):
+    print(name, noQuest, noAns, questions, answers, rights, user )
     result = {}
     result.update({"name":name})
+    result.update({"user":user})
     result.update({"noQuest":noQuest})
     result.update({"noAns":noAns})
     result.update({"lists":[]})
@@ -44,11 +46,11 @@ def package_to_data(name, noQuest, noAns, questions, answers, rights):
     # print(result)
     return result
 
-def quiz_package_handle(name, noQuest, noAns, questions, answers, rights):
-    new_data = package_to_data(name, noQuest, noAns, questions, answers, rights)
+def quiz_package_handle(name, noQuest, noAns, questions, answers, rights, user):
+    new_data = package_to_data(name, noQuest, noAns, questions, answers, rights, user)
     append_data_json(new_data)
 
-def data_to_quiz(filename):
+def data_to_quiz(filename, username: str = None):
     f = open(filename)
     quizzes = json.load(f)
     quizzesClasses = []   
@@ -60,7 +62,10 @@ def data_to_quiz(filename):
         noQuest  = quiz['noQuest']
         noAns = quiz['noAns']
         lists = quiz['lists']
+        user = quiz['user']
 
+        if( username != None and username != user):
+            break
         for list in lists:
             quest = list['quest']
             questions.append(quest)
@@ -71,7 +76,7 @@ def data_to_quiz(filename):
             right = list['right']
             rights.append(right)
         
-        quizzesClass = Quiz(name, int(noQuest), int(noAns), questions, answers, rights)
+        quizzesClass = Quiz(name, int(noQuest), int(noAns), questions, answers, rights, user)
         quizzesClasses.append(quizzesClass)
         # for u in quizzesClasses:
         #     print(u.name)

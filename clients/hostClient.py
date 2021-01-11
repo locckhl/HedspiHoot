@@ -79,7 +79,7 @@ def hostClient(client):
             client.send(Messages(MessType.SEND_NEW_QUIZ.name, username=username, body=f"{name};{noQuest};{noAns};{questions};{answers};{rights}").to_message())
             current_quiz = Quiz(name, int(noQuest), int(noAns), questions, answers, rights)
         else:
-            data = convert_message(client.recv(1024)).body # receive data.json
+            data = convert_message(client.recv(4096)).body # receive data.json
             if data == "[]":
                 print("You dont have any quiz yet")
                 print("Create a new on")
@@ -124,9 +124,9 @@ def hostClient(client):
 
                 received_quiz = convert_message(client.recv(1024)).body
                 # print(received_quiz)
-                name, noQuest, noAns, questions, answers, rights = received_quiz.split(';')
+                name, noQuest, noAns, questions, answers, rights, user = received_quiz.split(';')
                 
-                current_quiz = Quiz(name, int(noQuest), int(noAns), ast.literal_eval(questions), ast.literal_eval(answers), ast.literal_eval(rights))
+                current_quiz = Quiz(name, int(noQuest), int(noAns), ast.literal_eval(questions), ast.literal_eval(answers), ast.literal_eval(rights), user)
 
         
         print(f"current_quiz:{current_quiz.to_string()}")

@@ -1,3 +1,4 @@
+# from Quiz import data_to_quiz
 from clients.Player import Player
 
 
@@ -9,7 +10,7 @@ class Room():
         self.quiz = None
 
     def get_players_ranking(self):
-        caculate_score_of_player()
+        caculate_score_of_player(self)
         result = []
         players = sorted(self.players, key=lambda x: x.score, reverse=True)
         for player in players:
@@ -20,14 +21,17 @@ class Room():
 
     def find_player_in_room(self, nick_name:str) -> Player:
         for player in self.players:
-            if player.nick_name == nick_name:
+            if player.nickname == nick_name:
                 return player
         return None
 
 def caculate_score_of_player(self):
+    print(self)
     for player in self.players:
         streak = 0
         for i in range(len(player.answers)):
+            print(player.answers[i])
+            print(self.quiz)
             if player.answers[i] == self.quiz.rights[i]:
                 streak += 1
                 player.score = player.score + 100 + 50*streak
@@ -55,9 +59,6 @@ def caculate_score_of_player(self):
 # room.players.append(player3)
 # result2 = room.get_players_ranking()
 
-# # for player in result1:
-# #     print(player.score)
-# # for player in result2:
 # print(result2)
 
 

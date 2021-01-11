@@ -51,8 +51,8 @@ def playerClient(client):
                 print("You missed this question")
                 answer = '0'
             client.send(Messages(MessType.SEND_ANSWER.name, username=nickname, body=f"{pin};{answer}").to_message())
-            result = convert_message(client.recv(1024)).body
-            print(result)
+            status = convert_message(client.recv(1024)).body
+            print(status)
             mess = convert_message(client.recv(1024)).body
         print("End game")
         client.close()
