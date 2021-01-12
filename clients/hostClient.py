@@ -106,7 +106,7 @@ def hostClient(client):
                     rights.append(right)
 
                 client.send(Messages(MessType.SEND_NEW_QUIZ.name, username=username, body=f"{name};{noQuest};{noAns};{questions};{answers};{rights}").to_message())
-                current_quiz = Quiz(name, int(noQuest), int(noAns), questions, answers, rights)
+                current_quiz = Quiz(name, int(noQuest), int(noAns), questions, answers, rights, username)
             else:
                 data = data.replace("\'", "\"")
                 f = open("data-client.json", "w")
