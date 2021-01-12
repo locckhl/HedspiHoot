@@ -17,37 +17,37 @@ def hostClient(client):
     choice = input(">>>")
 
     while choice != "3":
-        client.send(Messages(MessType.HOST_SIGN.name, body=choice).to_message())
+        # client.send(Messages(MessType.HOST_SIGN.name, body=choice).to_message())
 
         if(choice == "1"): #sign up
             username = input("Input username : ")
             password = input("Input password : ")
             confirm_password = input("Confirm password : ")
-            client.send(Messages(MessType.SIGN_UP.name, body=f"{username};{password};{confirm_password}").to_message())
+            client.send(Messages(MessType.REQUEST_SIGN_UP.name, body=f"{username};{password};{confirm_password}").to_message())
             rmessage = convert_message(client.recv(1024)) # print received message
             print(rmessage.body)
             while rmessage.state != "True":
                 username = input("Input username : ")
                 password = input("Input password : ")
                 confirm_password = input("Confirm password : ")
-                client.send(Messages(MessType.SIGN_UP.name, body=f"{username};{password};{confirm_password}").to_message())
+                client.send(Messages(MessType.REQUEST_SIGN_UP.name, body=f"{username};{password};{confirm_password}").to_message())
                 rmessage = convert_message(client.recv(1024)) # print received message
                 print(rmessage.body)
         else: # sign in
             username = input("Input username : ")
             password = input("Input password : ")
-            client.send(Messages(MessType.SIGN_IN.name, body=f"{username};{password}").to_message())
+            client.send(Messages(MessType.REQUEST_SIGN_IN.name, body=f"{username};{password}").to_message())
             rmessage = convert_message(client.recv(1024)) # print received message
             print(rmessage.body)
             while rmessage.state != "True":
                 username = input("Input username : ")
                 password = input("Input password : ")
-                client.send(Messages(MessType.SIGN_IN.name, body=f"{username};{password}").to_message())
+                client.send(Messages(MessType.REQUEST_SIGN_IN.name, body=f"{username};{password}").to_message())
                 rmessage = convert_message(client.recv(1024)) # print received message
                 print(rmessage.body)
                 
-        choice = input("Do you wan to create new quiz (1) or choose from our quizzes (2) : ")
-        client.send(Messages(MessType.NEW_QUIZ.name, username=username, body=choice).to_message())
+        choice = input("Do you wan to create new quiz (1) or choose from quizzes in the past (2) : ")
+        client.send(Messages(MessType.IS_NEW_QUIZ.name, username=username, body=choice).to_message())
 
         if(choice  == "1"):
             # Send quiz
@@ -116,8 +116,8 @@ def hostClient(client):
                 # print(f"quizzes:{quizzes}")
 
                 print("Choose a quiz")
-                for quiz in quizzes:
-                    print(f"{quiz.id + 1}.: {quiz.name}")
+                for i in range(len(quizzes)):
+                    print(f"{i + 1}.: {quizzes[i].name}")
                 choice = input("Your choice:")
                 # send choice
                 client.send(Messages(MessType.SEND_QUIZ_CHOICE.name, username=username, body=choice).to_message())
@@ -139,34 +139,34 @@ def hostClient(client):
         client.send(Messages(MessType.REQUEST_START_GAME.name,username=username, body="n").to_message())
 
         # Waiting for players
-        request_start_game = 'n'
+        request_start_game = 'no'
         current_players = convert_message(client.recv(1024)).body
 
         try:
-            request_start_game = inputimeout(prompt=f'Current player is {current_players}, do you want to start game (y or n ): ', timeout=2)
+            request_start_game = inputimeout(prompt=f'Current player is {current_players}, do you want to start game (yes or no ): ', timeout=2)
         except TimeoutOccurred:
             pass
 
-        while request_start_game != "y":
-            client.send(Messages(MessType.REQUEST_START_GAME.name, username=username, body="n").to_message())
+        while request_start_game != "yes":
+            client.send(Messages(MessType.REQUEST_START_GAME.name, username=username, body="no").to_message())
             current_players = convert_message(client.recv(1024)).body
             # if current_players != temp:
             #     current_players = temp
             # request_start_game = input(f"Current player is {current_players}, do you want to start game (y or n ): ")
             try:
-                request_start_game = inputimeout(prompt=f'Current player is {current_players}, do you want to start game (y or n ): ', timeout=3)
+                request_start_game = inputimeout(prompt=f'Current player is {current_players}, do you want to start game (yes or no ): ', timeout=3)
             except TimeoutOccurred:
                 pass
         
-        client.send(Messages(MessType.REQUEST_START_GAME.name, username=username, body="y").to_message())
+        client.send(Messages(MessType.REQUEST_START_GAME.name, username=username, body="yes").to_message())
         print("Game started")
         
         # --------------------------------Game started---------------------------------
-        print(current_quiz.noQuest)
+        # print(current_quiz.noQuest)
         for x in range(0,current_quiz.noQuest):
-            print(x)
+            # print(x)
             mess = convert_message(client.recv(1024)).body
-            print(mess)
+            # print(mess)
             # client.send(Messages(MessType.CONFIRM_ROLE.name, body="ok").to_message())
             # Show questions and answers
             # mess = convert_message(client.recv(1024)).body
@@ -178,12 +178,19 @@ def hostClient(client):
             mess = convert_message(client.recv(1024)).body
             print(mess)
             if(x != (current_quiz.noQuest-1)):
-                request_next_quest = input("Next question (type y)?")
+                request_next_quest = input("Next question (type yes)?")
                 client.send(Messages(MessType.REQUEST_NEXT_QUESTION.name, username=username, body=request_next_quest).to_message())
             else:
                 client.send(Messages(MessType.END_GAME.name, username=username, body="End game").to_message())
+
+        # if("quizzes" in  locals()):
+        #     print("rihgttt")
+
+        #     for quiz in quizzes:
+        #         print(quiz)
+
+        #         del quiz
         print("End game")
-        client.close()
 
         print("1. Sign up: ")
         print("2. Sign in: ")

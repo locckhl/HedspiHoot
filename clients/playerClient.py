@@ -23,27 +23,27 @@ def playerClient(client):
     print("Enter 0 to exit: ")
     pin = input(">> ")
     while pin != "0":
-        client.send(Messages(MessType.ROOM_PIN.name, username=nickname, body=f"{pin}").to_message())
+        client.send(Messages(MessType.REQUEST_ROOM_PIN.name, username=nickname, body=f"{pin}").to_message())
         status = convert_message(client.recv(1024)).body # was an available room ?
 
         while status == "false":
             pin = input("Room not found, please input another one: ")
-            client.send(Messages(MessType.ROOM_PIN.name, username=nickname, body=f"{pin}").to_message())
+            client.send(Messages(MessType.REQUEST_ROOM_PIN.name, username=nickname, body=f"{pin}").to_message())
             status = convert_message(client.recv(1024)).body # was an available room ?
         print(f"Your enter room: {pin} ")
 
         print("Waiting for host to start game!!!!")
-        noAns, mess = convert_message(client.recv(1024)).body.split(";")
+        mess = convert_message(client.recv(1024)).body
         print("Game started")
 
         # --------------------------------Game started---------------------------------
         # print(f"noAns:{noAns}")
-        print(f"mess from server:{mess}")
+        # print(f"mess from server:{mess}")
         while(mess != 'End'):
 
-            print("Please choose Answers")
-            for x in range(0,int(noAns)):
-                print(f"{x+1}.")
+            print("Please choose Answers>>>>>>")
+            # for x in range(0,int(noAns)):
+            #     print(f"{x+1}.")
             # answer = input("Your anwer >> ")
             try:
                 answer = inputimeout(prompt=f'You have {TIME} seconds to answer:', timeout=TIME)
@@ -52,10 +52,9 @@ def playerClient(client):
                 answer = '0'
             client.send(Messages(MessType.SEND_ANSWER.name, username=nickname, body=f"{pin};{answer}").to_message())
             status = convert_message(client.recv(1024)).body
-            print(status)
+            # print(status)
             mess = convert_message(client.recv(1024)).body
         print("End game")
-        client.close()
 
         print("Input a room's pin to continue play: ")
         print("Enter 0 to exit: ")

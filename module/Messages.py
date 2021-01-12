@@ -16,8 +16,10 @@ class Messages():
 
 def convert_message(message: str) -> Messages:
     print(f"Message received : {message}")
-    
     message = message.decode("ascii")
+    if(message == ''):
+        print("close")
+        return Messages(MessType.CLOSE.name)
     # if(message == EOF):
     #     return
     # print(f"Message received from: {message}")

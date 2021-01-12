@@ -44,23 +44,23 @@ def solveResult(room:Room, host):
 
 
 def findHost(host_user_name) -> Host:
-    print(host_user_name)
+    # print(host_user_name)
     # print(hosts)
     for host in hosts:
-        print(host.username)
+        # print(host.username)
         if(host.username == host_user_name ):
             return host
     return None
 def findRoom(room_pin:int) -> Room:
-    print(int)
+    # print(int)
     for room in rooms:
-        print(room.pin)
+        # print(room.pin)
         if(room.pin == room_pin ):
             return room
     return None
 def broadCast(room:Room, message:Messages):
-    print(room.players)
-    print(players)
+    # print(room.players)
+    # print(players)
     for player_in_room in room.players:
         for player_dict in players:
             if(player_dict["nickname"] == player_in_room.nickname):
@@ -72,36 +72,35 @@ def handleClient(client, address):
     while True:
         rmessage = convert_message(client.recv(1024))
         rmessage_type = rmessage.type
-        print(rmessage_type)
+        # print(rmessage_type)
         # print(MessType.SEND_ROLE.name)
         # print(rmessage.username)
 
-        if(rmessage_type == MessType.SEND_ROLE.name): #1 Client choose role
+        if(rmessage_type == MessType.REQUEST_ROLE.name): #1 Client choose role
             if(rmessage.body == "1"):
-                print("#1 - 1")
-                smessage = Messages(MessType.CONFIRM_ROLE.name, body="You are host")
+                smessage = Messages(MessType.CONFIRM.name, body="You are host")
             elif(rmessage.body == "2"):
-                smessage = Messages(MessType.CONFIRM_ROLE.name, body="You are client")
+                smessage = Messages(MessType.CONFIRM.name, body="You are client")
             else:
-                smessage = Messages(MessType.CONFIRM_ROLE.name, state=False , body="Wrong mess")
+                smessage = Messages(MessType.CONFIRM.name, state=False , body="Wrong mess")
             client.send(smessage.to_message())
-        elif(rmessage_type == MessType.NEW_QUIZ.name): #3 Host quiz 's choice ( new or old ) 
+        elif(rmessage_type == MessType.IS_NEW_QUIZ.name): #3 Host quiz 's choice ( new or old ) 
             if(rmessage.body == "1"):
-                client.send(Messages(MessType.CONFIRM_ROLE.name, body="Input new quiz").to_message())
+                client.send(Messages(MessType.CONFIRM.name, body="Input new quiz").to_message())
                 
             else:
                 # file = open("data.json")
                 # data = json.load(file)
                 username = rmessage.username
                 data = find_quiz_by_user(username)
-                print(f"data:{data}")
-                client.send(Messages(MessType.SEND_QUIZZES.name, body=data).to_message())
+                # print(f"data:{data}")
+                client.send(Messages(MessType.RESPONSE_QUIZZES.name, body=data).to_message())
 
             
         elif(rmessage_type == MessType.SEND_NEW_QUIZ.name): #4
             name, noQuest, noAns, questions, answers, rights = rmessage.body.split(';')
             username = rmessage.username
-            print(name, noQuest, noAns, questions, answers, rights)
+            # print(name, noQuest, noAns, questions, answers, rights)
             quiz_package_handle(name, int(noQuest), int(noAns), ast.literal_eval(questions), ast.literal_eval(answers), ast.literal_eval(rights), username)       
             quizzes = data_to_quiz("data.json")
             current_quiz = quizzes[-1]
@@ -135,7 +134,7 @@ def handleClient(client, address):
                 host.current_quiz = current_quiz
                 
             
-            client.send(Messages(MessType.CONFIRM_ROLE.name, body=current_quiz.to_string()).to_message())
+            client.send(Messages(MessType.CONFIRM.name, body=current_quiz.to_string()).to_message())
             
             
             pin = random.randint(1,20)
@@ -148,26 +147,26 @@ def handleClient(client, address):
             current_room = rooms[-1]
             
             host = findHost(username)
-            print("host find", host)
+            # print("host find", host)
 
             if(host != None):
                 host.current_room = current_room
                 host.current_room.quiz = current_quiz
-                print(f"{host.username}")
-                print(f"{host.current_room}")
-                print(f"{current_room}")
+                # print(f"{host.username}")
+                # print(f"{host.current_room}")
+                # print(f"{current_room}")
         elif(rmessage_type == MessType.REQUEST_START_GAME.name): #9
             username = rmessage.username
             host = findHost(username)
-            print(f"{host.username}")
-            print(f"{host.current_room}")
-            request_start_game = "n"
-            while(request_start_game != "y" ):
+            # print(f"{host.username}")
+            # print(f"{host.current_room}")
+            request_start_game = "no"
+            while(request_start_game != "yes" ):
                 client.send(Messages(MessType.SEND_NO_PLAYER.name, body=str(len(host.current_room.players))).to_message())
                 request_start_game = convert_message(client.recv(1024)).body
-            print(request_start_game)
-            client.send(Messages(MessType.START_GAME.name, body="start game").to_message())
-            broadCast(host.current_room, Messages(MessType.START_GAME.name, body="2;start game"))
+            # print(request_start_game)
+            client.send(Messages(MessType.RESPONSE_START_GAME.name, body="start game").to_message())
+            broadCast(host.current_room, Messages(MessType.RESPONSE_START_GAME.name, body="start game"))
             print("Game started")
             time.sleep(TIME+1)
             # host.current_room.caculate_score_of_player()
@@ -179,9 +178,9 @@ def handleClient(client, address):
             username = rmessage.username
             # username = rmessage.username
             host = findHost(username)
-            client.send(Messages(MessType.NEXT_QUESTION.name, body="Next question").to_message())
+            client.send(Messages(MessType.RESPONSE_NEXT_QUESTION.name, body="Next question").to_message())
             # convert_message(client.recv(1024))
-            broadCast(host.current_room, Messages(MessType.NEXT_QUESTION.name, body="Next question"))
+            broadCast(host.current_room, Messages(MessType.RESPONSE_NEXT_QUESTION.name, body="Next question"))
             time.sleep(TIME+1)
             # result = host.current_room.get_players_ranking()
             # client.send(Messages(MessType.HOST_RESULT.name, body=result).to_message())
@@ -192,14 +191,14 @@ def handleClient(client, address):
             
             nickname = rmessage.body
             while(nickname in nicknames):
-                client.send(Messages(MessType.VALID_NICKNAME.name, body="false").to_message())
+                client.send(Messages(MessType.IS_VALID_NICKNAME.name, body="false").to_message())
                 nickname = convert_message(client.recv(1024))
 
             nicknames.append(nickname)
             print(f"current players: {nicknames}")
-            client.send(Messages(MessType.VALID_NICKNAME.name, body="true").to_message())
+            client.send(Messages(MessType.IS_VALID_NICKNAME.name, body="true").to_message())
 
-        elif(rmessage_type == MessType.ROOM_PIN.name): #15
+        elif(rmessage_type == MessType.REQUEST_ROOM_PIN.name): #15
             
             room_pin = rmessage.body
             nickname = rmessage.username
@@ -214,14 +213,14 @@ def handleClient(client, address):
                 player = Player(nickname, current_room)
                 players.append({"nickname": nickname, "client": client})
                 current_room.players.append(player)
-                print(f"Current room: {current_room}")
-                client.send(Messages(MessType.VALID_ROOM_PIN.name, body="true").to_message())
+                # print(f"Current room: {current_room}")
+                client.send(Messages(MessType.IS_VALID_ROOM_PIN.name, body="true").to_message())
 
-                print(f"Current player in room {current_room.pin}")
-                for player in current_room.players:
-                    print(f"{player.nickname}")
+                # print(f"Current player in room {current_room.pin}")
+                # for player in current_room.players:
+                #     print(f"{player.nickname}")
             else:
-                client.send(Messages(MessType.VALID_ROOM_PIN.name, body="false").to_message())
+                client.send(Messages(MessType.IS_VALID_ROOM_PIN.name, body="false").to_message())
                 
         elif(rmessage_type == MessType.SEND_ANSWER.name): #19
             nickname = rmessage.username
@@ -230,36 +229,39 @@ def handleClient(client, address):
             if room != None:
                 player = room.find_player_in_room(nickname)
                 player.answers.append(int(answer) - 1)
-                print(player.answers)
-                # client.send(Messages(MessType.CONFIRM_ROLE.name, state=False, body="Answer sucess").to_message())
+                # print(player.answers)
+                # client.send(Messages(MessType.CONFIRM.name, state=False, body="Answer sucess").to_message())
                 # client.send(Messages(MessType.PLAYER_RESULT.name, body=player.get_result()).to_message()) 
             else:
-                # client.send(Messages(MessType.CONFIRM_ROLE.name, state=False, body="Room not found or answer invalid").to_message())
+                # client.send(Messages(MessType.CONFIRM.name, state=False, body="Room not found or answer invalid").to_message())
                 pass
 
-        elif(rmessage_type == MessType.SIGN_UP.name): #21
+        elif(rmessage_type == MessType.REQUEST_SIGN_UP.name): #21
             username, password, confirm_password = rmessage.body.split(';')
             if(check_usr_valid(username) and password == confirm_password):
                 host = Host(username,password)
                 hosts.append(host)
                 append_user(username, password)
-                client.send(Messages(MessType.CONFIRM_ROLE.name, state=True, body="sign up successed").to_message())
+                client.send(Messages(MessType.CONFIRM.name, state=True, body="sign up successed").to_message())
             else:
-                client.send(Messages(MessType.CONFIRM_ROLE.name, state=False, body="sign up falied").to_message())
+                client.send(Messages(MessType.CONFIRM.name, state=False, body="sign up falied").to_message())
 
-        elif(rmessage_type == MessType.SIGN_IN.name): #21
+        elif(rmessage_type == MessType.REQUEST_SIGN_IN.name): #21
             username, password = rmessage.body.split(';')
             if(check_host_exsist(username, password)):
                 host = Host(username,password)
                 hosts.append(host)
-                client.send(Messages(MessType.CONFIRM_ROLE.name, state=True, body="sign in successed").to_message())
+                client.send(Messages(MessType.CONFIRM.name, state=True, body="sign in successed").to_message())
             else:
-                client.send(Messages(MessType.CONFIRM_ROLE.name, state=False, body="sign in falied").to_message())
+                client.send(Messages(MessType.CONFIRM.name, state=False, body="sign in falied").to_message())
 
         elif(rmessage_type == MessType.END_GAME.name): #23
             username = rmessage.username
             host = findHost(username)
             broadCast(host.current_room, Messages(MessType.END_GAME.name, body="End"))
+        elif(rmessage_type == MessType.CLOSE.name): #23
+            print(f"Client with address:{str(address)} has been disconnected")
+            return
         else:
             pass
   
