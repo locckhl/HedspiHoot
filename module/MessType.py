@@ -1,7 +1,7 @@
 # from enum import IntEnum
 from enum import Enum
 class MessType(Enum):
-   REQUEST_ROLE = 1 ##
+   REQUEST_ROLE = 1 ## -----
    CONFIRM = 2
    IS_NEW_QUIZ = 3 ##
    SEND_NEW_QUIZ = 4 ##
@@ -13,15 +13,15 @@ class MessType(Enum):
    SHOW_QUESTION = 10
    HOST_RESULT = 11
    REQUEST_NEXT_QUESTION = 12 ##
-   SET_NICKNAME = 13 ##
+   SET_NICKNAME = 13 ## -----
    IS_VALID_NICKNAME = 14
    REQUEST_ROOM_PIN = 15 ##
    IS_VALID_ROOM_PIN = 16
    RESPONSE_START_GAME = 17
    SEND_ANSWER = 18 ##
    PLAYER_RESULT = 19
-   REQUEST_SIGN_UP = 20
-   REQUEST_SIGN_IN = 21
+   REQUEST_SIGN_UP = 20 # ---
+   REQUEST_SIGN_IN = 21 # ----
    RESPONSE_NEXT_QUESTION = 22
    END_GAME = 23
    CLOSE = 24

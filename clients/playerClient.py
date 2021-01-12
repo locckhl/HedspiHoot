@@ -11,11 +11,12 @@ def playerClient(client):
     nickname = input("Please input your nickname: ")
     client.send(Messages(MessType.SET_NICKNAME.name, body=f"{nickname}").to_message())
 
-    status = convert_message(client.recv(1024)).body # was nickname created sucessfully
-
-    while status == "false":
+    message = convert_message(client.recv(1024)) # was nickname created sucessfully
+    session = message.body
+    status = message.state
+    while status == "False":
         nickname = input("Your nick name was taken, please input another one: ")
-        client.send(Messages(MessType.SET_NICKNAME.name, body=f"{nickname}").to_message())
+        client.send(Messages(MessType.SET_NICKNAME.name, session=session, body=f"{nickname}").to_message())
         status = convert_message(client.recv(1024)).body # was nickname created sucessfully
     print(f"Your nick name {nickname} was created sucessfully")
 
@@ -23,12 +24,12 @@ def playerClient(client):
     print("Enter 0 to exit: ")
     pin = input(">> ")
     while pin != "0":
-        client.send(Messages(MessType.REQUEST_ROOM_PIN.name, username=nickname, body=f"{pin}").to_message())
+        client.send(Messages(MessType.REQUEST_ROOM_PIN.name, session=session, username=nickname, body=f"{pin}").to_message())
         status = convert_message(client.recv(1024)).body # was an available room ?
 
-        while status == "false":
+        while status == "False":
             pin = input("Room not found, please input another one: ")
-            client.send(Messages(MessType.REQUEST_ROOM_PIN.name, username=nickname, body=f"{pin}").to_message())
+            client.send(Messages(MessType.REQUEST_ROOM_PIN.name, session=session, username=nickname, body=f"{pin}").to_message())
             status = convert_message(client.recv(1024)).body # was an available room ?
         print(f"Your enter room: {pin} ")
 
@@ -50,7 +51,7 @@ def playerClient(client):
             except TimeoutOccurred:
                 print("You missed this question")
                 answer = '0'
-            client.send(Messages(MessType.SEND_ANSWER.name, username=nickname, body=f"{pin};{answer}").to_message())
+            client.send(Messages(MessType.SEND_ANSWER.name, session=session, username=nickname, body=f"{pin};{answer}").to_message())
             status = convert_message(client.recv(1024)).body
             # print(status)
             mess = convert_message(client.recv(1024)).body
