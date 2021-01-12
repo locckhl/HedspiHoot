@@ -29,9 +29,18 @@ hosts = []
 nicknames = []
 rooms = []
 pins = []
-def broadcast(message):
-    for client in clients:
-        client.send(message)
+
+
+def solveResult(room:Room, host):
+    hostResult =room.get_players_ranking()
+    host.send(Messages(MessType.HOST_RESULT.name, body=hostResult).to_message())
+    # client.send(Messages(MessType.PLAYER_RESULT.name, body=player.get_result()).to_message()) 
+    # print(room.players)
+    # print(players)
+    for player_in_room in room.players:
+        for player_dict in players:
+            if(player_dict["nickname"] == player_in_room.nickname):
+                player_dict["client"].send(Messages(MessType.PLAYER_RESULT.name, body=player_in_room.get_result()).to_message())
 
 
 def findHost(host_user_name) -> Host:
@@ -160,10 +169,11 @@ def handleClient(client, address):
             client.send(Messages(MessType.START_GAME.name, body="start game").to_message())
             broadCast(host.current_room, Messages(MessType.START_GAME.name, body="2;start game"))
             print("Game started")
-            time.sleep(TIME+0.1)
+            time.sleep(TIME+1)
             # host.current_room.caculate_score_of_player()
-            result = host.current_room.get_players_ranking()
-            client.send(Messages(MessType.HOST_RESULT.name, body=result).to_message())
+            # result = host.current_room.get_players_ranking()
+            # client.send(Messages(MessType.HOST_RESULT.name, body=result).to_message())
+            solveResult(host.current_room, client)
 
         elif(rmessage_type == MessType.REQUEST_NEXT_QUESTION.name): #12
             username = rmessage.username
@@ -172,9 +182,11 @@ def handleClient(client, address):
             client.send(Messages(MessType.NEXT_QUESTION.name, body="Next question").to_message())
             # convert_message(client.recv(1024))
             broadCast(host.current_room, Messages(MessType.NEXT_QUESTION.name, body="Next question"))
-            time.sleep(TIME+0.1)
-            result = host.current_room.get_players_ranking()
-            client.send(Messages(MessType.HOST_RESULT.name, body=result).to_message())
+            time.sleep(TIME+1)
+            # result = host.current_room.get_players_ranking()
+            # client.send(Messages(MessType.HOST_RESULT.name, body=result).to_message())
+            solveResult(host.current_room, client)
+
 
         elif(rmessage_type == MessType.SET_NICKNAME.name): #13
             
@@ -217,12 +229,13 @@ def handleClient(client, address):
             room = findRoom(int(pin))
             if room != None:
                 player = room.find_player_in_room(nickname)
-                player.answers.append(int(answer))
+                player.answers.append(int(answer) - 1)
                 print(player.answers)
                 # client.send(Messages(MessType.CONFIRM_ROLE.name, state=False, body="Answer sucess").to_message())
-                client.send(Messages(MessType.PLAYER_RESULT.name, body=player.get_result()).to_message()) 
+                # client.send(Messages(MessType.PLAYER_RESULT.name, body=player.get_result()).to_message()) 
             else:
-                client.send(Messages(MessType.CONFIRM_ROLE.name, state=False, body="Room not found or answer invalid").to_message())
+                # client.send(Messages(MessType.CONFIRM_ROLE.name, state=False, body="Room not found or answer invalid").to_message())
+                pass
 
         elif(rmessage_type == MessType.SIGN_UP.name): #21
             username, password, confirm_password = rmessage.body.split(';')

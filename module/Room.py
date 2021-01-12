@@ -28,10 +28,9 @@ class Room():
 def caculate_score_of_player(self):
     print(self)
     for player in self.players:
+        player.score = 0
         streak = 0
         for i in range(len(player.answers)):
-            print(player.answers[i])
-            print(self.quiz)
             if player.answers[i] == self.quiz.rights[i]:
                 streak += 1
                 player.score = player.score + 100 + 50*streak
