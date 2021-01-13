@@ -52,9 +52,10 @@ def playerClient(client):
                 print("You missed this question")
                 answer = '0'
             client.send(Messages(MessType.SEND_ANSWER.name, session=session, username=nickname, body=f"{pin};{answer}").to_message())
-            status = convert_message(client.recv(1024)).body
-            # print(status)
+            result = convert_message(client.recv(1024)).body
+            print(result)
             mess = convert_message(client.recv(1024)).body
+            # print(result)
         print("End game")
 
         print("Input a room's pin to continue play: ")

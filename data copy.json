@@ -1,0 +1,74 @@
+[
+    {
+        "name": "Vat ly - Khoa hoc ",
+        "user": "admin",
+        "noQuest": 5,
+        "noAns": 2,
+        "lists": [
+            {
+                "quest": "Khi vi tri Mat Troi, Mat Trang, Trai Dat co vi tri nhu the nao thi dao dong cua thuy trieu la lon nhat ?",
+                "ans": [
+                    "Thang hang",
+                    "Tao thanh tam giac can"
+                ],
+                "right": 0
+            },
+            {
+                "quest": "Khi roi tu do vat bi lech ve phuong nao ?",
+                "ans": [
+                    "Dong",
+                    "Tay"
+                ],
+                "right": 0
+            },
+            {
+                "quest": "Cap quang la day dan sang ung dung hien tuong gi de truyen tin hieu trong thong tin ?",
+                "ans": [
+                    "Phan xa toan phan",
+                    "Khuc xa"
+                ],
+                "right": 0
+            },
+            {
+                "quest": " Hien tuong xay ra khi Mat Trang di qua giua Trai Dat va Mat Troi tren cung mot duong thang va quan sat tu Trai Dat ?",
+                "ans": [
+                    "Nhat thuc",
+                    "Nguyet thuc"
+                ],
+                "right": 0
+            },
+            {
+                "quest": "Tren la ban, kim chi huong dong hop voi kim chi huong nam 1 goc bao nhieu do ?",
+                "ans": [
+                    "90",
+                    "180"
+                ],
+                "right": 0
+            }
+        ]
+    },
+    {
+        "name": "English",
+        "user": "admin",
+        "noQuest": 2,
+        "noAns": 2,
+        "lists": [
+            {
+                "quest": "Which month of the year doesnt have the 30th day",
+                "ans": [
+                    "April",
+                    "February"
+                ],
+                "right": 1
+            },
+            {
+                "quest": "What is the main hair colour of Vietnamesepeople?",
+                "ans": [
+                    "black",
+                    "green"
+                ],
+                "right": 0
+            }
+        ]
+    }
+]

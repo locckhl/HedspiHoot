@@ -39,13 +39,17 @@ def main():
             role = input("Please choose your choice ")
 
         print("Good bye")
-    # username = input("Welcome to HedHoot, please username")
-    # client.send(Messages(MessType.NEW_QUIZ.name, username,"asdfa", False, "{dfs,wf,wf}").to_message())
-    # client.close()
+        # username = input("Welcome to HedHoot, please username")
+        # client.send(Messages(MessType.NEW_QUIZ.name, username,"asdfa", False, "{dfs,wf,wf}").to_message())
+        # client.close()
         client.close()
 
-    except:
-        print("An error occured")
+    # except:
+    #     print("An error occured")
+    #     client.close()
+    # sys.exit(1)
+    except KeyboardInterrupt:
+        print("Ctrl+C pressed...")
         client.close()
         sys.exit(1)
 

@@ -242,11 +242,8 @@ def handleClient(client, address):
                 if room != None:
                     player = room.find_player_in_room(nickname)
                     player.answers.append(int(answer) - 1)
-                    # print(player.answers)
-                    # client.send(Messages(MessType.CONFIRM.name, state=False, body="Answer sucess").to_message())
-                    # client.send(Messages(MessType.PLAYER_RESULT.name, body=player.get_result()).to_message()) 
+                   
                 else:
-                    # client.send(Messages(MessType.CONFIRM.name, state=False, body="Room not found or answer invalid").to_message())
                     pass
 
             elif(rmessage_type == MessType.REQUEST_SIGN_UP.name): #21
@@ -278,6 +275,7 @@ def handleClient(client, address):
                 broadCast(host.current_room, Messages(MessType.END_GAME.name, body="End"))
             elif(rmessage_type == MessType.CLOSE.name): #23
                 print(f"Client with address:{str(address)} has been disconnected")
+                client.close()
                 return
             else:
                 pass
