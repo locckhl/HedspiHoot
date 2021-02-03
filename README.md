@@ -11,9 +11,9 @@ HedspiHoot is a game-based learning platform that makes it easy to create, share
 Follow the following steps to clone this project: ❤❤
 
 * Clone:
-    * Using https: `git clone https://github.com/locckhl/HedspiHoot.git` 
-    * Using ssh: `git@github.com:locckhl/HedspiHoot.git`
-    * Using Github CLI: `gh repo clone locckhl/HedspiHoot`
+    * Using https: `git clone https://github.com/HuyenNguyenThi-HedspiK62/HedspiHoot.git` 
+    * Using ssh: `git@github.com:HuyenNguyenThi-HedspiK62/HedspiHoot.git`
+    * Using Github CLI: `gh repo clone HuyenNguyenThi-HedspiK62/HedspiHoot`
 
 
 * Create env.py file then change SERVER_IP and CLIENT_IP by your ip adress: 
